@@ -1,0 +1,15 @@
+bin/
+obj/
+*.user
+*.suo
+*.swp
+*.log
+.vs/
+.idea/
+.vscode/
+
+# User secrets
+secrets.json
+
+# Publish outputs
+publish/
