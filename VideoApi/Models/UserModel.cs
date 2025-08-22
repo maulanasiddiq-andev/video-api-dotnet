@@ -12,10 +12,10 @@ namespace VideoApi.Models
         public string Email { get; set; } = string.Empty;
         [Required]
         public string HashedPassword { get; set; } = string.Empty;
-        public DateTime EmailVerifiedTime { get; set; }
+        public DateTime? EmailVerifiedTime { get; set; } = null;
         public string? ProfileImage { get; set; }
         public string? CoverImage { get; set; }
-        public DateTime LastLoginTime { get; set; }
+        public DateTime? LastLoginTime { get; set; } = null;
         public int FailedLoginAttempts { get; set; } = 0;
     }
 }
