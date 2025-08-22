@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using VideoApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +9,14 @@ builder.Services.AddOpenApi();
 
 // Controllers
 builder.Services.AddControllers();
+
+// connect to database
+var videoAppConnectionString = builder.Configuration.GetConnectionString("VideoAppPostgreSql");
+builder.Services.AddDbContext<VideoAppDBContext>(options =>
+{
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    options.UseNpgsql(videoAppConnectionString);
+});
 
 var app = builder.Build();
 
