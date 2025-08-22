@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VideoApi.Models;
@@ -11,9 +12,11 @@ using VideoApi.Models;
 namespace VideoApi.Migrations
 {
     [DbContext(typeof(VideoAppDBContext))]
-    partial class VideoAppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250822032500_ChangeDataType")]
+    partial class ChangeDataType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +25,7 @@ namespace VideoApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("VideoApi.Models.UserModel", b =>
+            modelBuilder.Entity("VideoApi.Models.Identity.UserModel", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("text");
