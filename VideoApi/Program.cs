@@ -10,6 +10,9 @@ builder.Services.AddOpenApi();
 // Controllers
 builder.Services.AddControllers();
 
+// Mapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 // connect to database
 var videoAppConnectionString = builder.Configuration.GetConnectionString("VideoAppPostgreSql");
 builder.Services.AddDbContext<VideoAppDBContext>(options =>
