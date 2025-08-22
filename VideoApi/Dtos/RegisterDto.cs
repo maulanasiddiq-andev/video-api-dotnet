@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation;
 
 namespace VideoApi.Dtos
 {
@@ -10,5 +11,15 @@ namespace VideoApi.Dtos
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+    }
+
+    public class RegisterValidator : AbstractValidator<RegisterDto>
+    {
+        public RegisterValidator()
+        {
+            RuleFor(x => x.Name).NotEmpty().WithMessage("Nama tidak boleh kosong");
+            RuleFor(x => x.Email).NotEmpty().WithMessage("Email tidak boleh kosong");
+            RuleFor(x => x.Password).NotEmpty().WithMessage("Password tidak boleh kosong");
+        }
     }
 }
