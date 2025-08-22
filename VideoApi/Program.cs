@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using VideoApi.Models;
+using VideoApi.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,9 @@ builder.Services.AddDbContext<VideoAppDBContext>(options =>
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     options.UseNpgsql(videoAppConnectionString);
 });
+
+// Register repositories
+builder.Services.RegisterRepositories();
 
 var app = builder.Build();
 
