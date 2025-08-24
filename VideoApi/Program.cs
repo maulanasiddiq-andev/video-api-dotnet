@@ -22,6 +22,9 @@ builder.Services.AddDbContext<VideoAppDBContext>(options =>
     options.UseNpgsql(videoAppConnectionString);
 });
 
+// Email
+builder.Services.Configure<EmailSettingsModel>(builder.Configuration.GetSection("EmailSettings"));
+
 // Register repositories
 builder.Services.RegisterRepositories();
 
