@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentValidation;
 
 namespace VideoApi.Dtos
@@ -21,7 +17,7 @@ namespace VideoApi.Dtos
             RuleFor(x => x.Name).NotEmpty().WithMessage("Nama tidak boleh kosong");
             RuleFor(x => x.Username).NotEmpty().WithMessage("Username tidak boleh kosong");
             RuleFor(x => x.Email).NotEmpty().WithMessage("Email tidak boleh kosong");
-            RuleFor(x => x.Email).EmailAddress().WithMessage("Email tidak boleh kosong");
+            RuleFor(x => x.Email).EmailAddress().WithMessage("Alamat email harus valid");
             RuleFor(x => x.Password).NotEmpty().WithMessage("Password tidak boleh kosong");
         }
     }
