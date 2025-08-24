@@ -2,7 +2,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using VideoApi.Dtos;
 using VideoApi.Exceptions;
-using VideoApi.Helpers;
 using VideoApi.Models;
 using VideoApi.Repositories;
 using VideoApi.Responses;
@@ -43,6 +42,26 @@ namespace VideoApi.Controllers
                 await _authRepository.RegisterAsync(user, registerDto.Password);
 
                 return new BaseResponse(true, "Pendaftaran Berhasil", null);
+            }
+            catch (KnownException ex)
+            {
+                return new BaseResponse(false, ex.Message, null);
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse(false, ex.Message, null);
+            }
+        }
+
+        [HttpPost]
+        [Route("otp")]
+        public async Task<BaseResponse> CheckOtpValidationAsync([FromBody] CheckOtpDto checkOtpDto)
+        {
+            try
+            {
+                await _authRepository.CheckOtpValidationAsync(checkOtpDto);
+
+                return new BaseResponse(true, "Kode OTP berhasil di verifikasi, silakan login", null);
             }
             catch (KnownException ex)
             {

@@ -9,6 +9,7 @@ namespace VideoApi.Mappings
         public UserMappingProfile()
         {
             CreateMap<RegisterDto, UserModel>();
+            CreateMap<UserModel, UserDto>();
         }
     }
 }

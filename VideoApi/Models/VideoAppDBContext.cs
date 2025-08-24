@@ -8,5 +8,6 @@ namespace VideoApi.Models
         public VideoAppDBContext(DbContextOptions<VideoAppDBContext> options) : base(options) { }
 
         public DbSet<UserModel> User { get; set; }
+        public DbSet<OtpModel> Otp { get; set; }
     }
 }

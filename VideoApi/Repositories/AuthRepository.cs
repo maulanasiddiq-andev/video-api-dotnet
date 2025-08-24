@@ -1,8 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
+using MailKit.Net.Smtp;
 using VideoApi.Constants;
 using VideoApi.Exceptions;
 using VideoApi.Helpers;
 using VideoApi.Models;
+using Microsoft.Extensions.Options;
+using VideoApi.Dtos;
 
 namespace VideoApi.Repositories
 {
@@ -10,17 +14,19 @@ namespace VideoApi.Repositories
     {
         private readonly VideoAppDBContext _dBContext;
         private readonly PasswordHasherHelper passwordHasherHelper;
-        public AuthRepository(VideoAppDBContext dBContext)
+        private readonly EmailSettingsModel emailSettings;
+        public AuthRepository(VideoAppDBContext dBContext, IOptions<EmailSettingsModel> options)
         {
             _dBContext = dBContext;
+            emailSettings = options.Value;
             passwordHasherHelper = new PasswordHasherHelper();
         }
 
         public async Task RegisterAsync(UserModel user, string password)
         {
-            var existingUser = await FindUserByEmailAsync(user.Email);
+            var userExists = await IsValidToCreateUser(user.Email, user.Username);
 
-            if (existingUser != null)
+            if (!userExists)
             {
                 throw new KnownException($"User dengan email {user.Email} sudah ada");
             }
@@ -31,15 +37,73 @@ namespace VideoApi.Repositories
             user.ModifiedTime = DateTime.UtcNow;
             user.RecordStatus = RecordStatusConstant.Active;
 
+            Random rnd = new Random();
+            var otpCode = rnd.Next(1000, 9999);
+
+            var otp = new OtpModel
+            {
+                OtpId = Guid.NewGuid().ToString("N"),
+                Email = user.Email,
+                OtpCode = otpCode,
+                CreatedTime = DateTime.UtcNow,
+                ModifiedTime = DateTime.UtcNow
+            };
+
+            await _dBContext.AddAsync(otp);
+            await _dBContext.SaveChangesAsync();
+
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("MS Developer Video App", "maulanasiddiqdeveloper@gmail.com"));
+            message.To.Add(new MailboxAddress(user.Name, user.Email));
+            message.Subject = "Kode OTP";
+
+            message.Body = new TextPart("plain")
+            {
+                Text = $"Kode OTP Anda adalah {otpCode}"
+            };
+
+            using (var client = new SmtpClient())
+            {
+                client.Connect(emailSettings.SmtpServer, emailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
+                client.Authenticate(emailSettings.Username, emailSettings.Password);
+
+                client.Send(message);
+                client.Disconnect(true);
+            }
+
             await _dBContext.AddAsync(user);
             await _dBContext.SaveChangesAsync();
         }
 
-        public async Task<UserModel?> FindUserByEmailAsync(string email)
+        public async Task CheckOtpValidationAsync(CheckOtpDto checkOtpDto)
         {
-            UserModel? user = await _dBContext.User.Where(user => user.Email.ToLower() == email.ToLower()).FirstOrDefaultAsync();
+            var otpExists = await _dBContext.Otp.AnyAsync(x => x.Email == checkOtpDto.Email &&
+                                                            x.OtpCode == checkOtpDto.OtpCode &&
+                                                            DateTime.UtcNow < x.ExpiredTime);
+            if (otpExists == false)
+            {
+                throw new KnownException("Kode OTP tidak valid");
+            }
 
-            return user;
+            var user = await _dBContext.User.Where(x => x.Email == checkOtpDto.Email).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new KnownException("User tidak ditemukan");
+            }
+
+            user.EmailVerifiedTime = DateTime.UtcNow;
+            _dBContext.Update(user);
+            await _dBContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsValidToCreateUser(string email, string username)
+        {
+            bool user = await _dBContext.User
+                .AnyAsync(user =>
+                    (user.Email == email || user.Username.ToLower() == username.ToLower()) &&
+                    user.RecordStatus.ToLower() == RecordStatusConstant.Active.ToLower());
+
+            return !user;
         }
     }
 }

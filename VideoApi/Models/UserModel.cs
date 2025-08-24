@@ -9,6 +9,8 @@ namespace VideoApi.Models
         [Required]
         public string Name { get; set; } = string.Empty;
         [Required]
+        public string Username { get; set; } = string.Empty;
+        [Required]
         public string Email { get; set; } = string.Empty;
         [Required]
         public string HashedPassword { get; set; } = string.Empty;
