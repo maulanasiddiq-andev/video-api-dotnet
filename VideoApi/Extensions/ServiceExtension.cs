@@ -7,6 +7,7 @@ namespace VideoApi.Extensions
         public static void RegisterRepositories(this IServiceCollection collection)
         {
             collection.AddTransient<AuthRepository>();
+            collection.AddTransient<UserRepository>();
         }
     }
 }
