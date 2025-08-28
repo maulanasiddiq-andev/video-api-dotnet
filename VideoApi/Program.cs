@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using VideoApi.Models;
 using VideoApi.Extensions;
+using VideoApi.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,9 @@ builder.Services.AddDbContext<VideoAppDBContext>(options =>
 
 // Email
 builder.Services.Configure<EmailSettingsModel>(builder.Configuration.GetSection("EmailSettings"));
+
+// JWT
+builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JwtSettings"));
 
 // Register repositories
 builder.Services.RegisterRepositories();

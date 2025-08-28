@@ -9,5 +9,6 @@ namespace VideoApi.Models
 
         public DbSet<UserModel> User { get; set; }
         public DbSet<OtpModel> Otp { get; set; }
+        public DbSet<UserTokenModel> UserToken { get; set; }
     }
 }
