@@ -1,10 +1,13 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using VideoApi.Constants;
 using VideoApi.Dtos;
 using VideoApi.Exceptions;
 using VideoApi.Models;
 using VideoApi.Repositories;
 using VideoApi.Responses;
+using VideoApi.Settings;
 
 namespace VideoApi.Controllers
 {
@@ -16,7 +19,8 @@ namespace VideoApi.Controllers
         private readonly AuthRepository _authRepository;
         public AuthController(
             IMapper mapper,
-            AuthRepository authRepository
+            AuthRepository authRepository,
+            IOptions<JWTSettings> options
         )
         {
             _mapper = mapper;
@@ -75,11 +79,44 @@ namespace VideoApi.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<string> LoginAsync()
+        public async Task<BaseResponse> LoginAsync([FromBody] LoginDto loginDto)
         {
-            await Task.Delay(200);
+            try
+            {
+                var validator = new LoginValidator();
+                var results = validator.Validate(loginDto);
+                if (!results.IsValid)
+                {
+                    var messages = results.Errors.Select(x => x.ErrorMessage).ToList();
+                    return new BaseResponse(false, messages);
+                }
 
-            return "LOGIN";
+                var user = await _authRepository.FindUserByEmailAsync(loginDto.Email);
+                if (user is null)
+                {
+                    throw new KnownException(ErrorMessageConstant.InvalidLogin);
+                }
+
+                var isLoginValid = await _authRepository.IsLoginValidAsync(user, loginDto.Password);
+                if (!isLoginValid)
+                {
+                    throw new KnownException(ErrorMessageConstant.InvalidLogin);
+                }
+
+                var userAgent = string.IsNullOrEmpty(Request.Headers["User-Agent"]) ? "" : Request.Headers["User-Agent"].ToString();
+
+                TokenDto tokenDto = await _authRepository.GenerateAndSaveLoginToken(user, userAgent);
+
+                return new BaseResponse(true, "Login Berhasil", tokenDto);
+            }
+            catch (KnownException ex)
+            {
+                return new BaseResponse(false, ex.Message, null);
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse(false, ex.Message, null);
+            }
         }
     }
 }

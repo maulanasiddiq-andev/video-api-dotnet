@@ -39,5 +39,32 @@ namespace VideoApi.Helpers
                 return $"{salt}.{key}";
             }
         }
+
+        public bool IsPasswordValid(string hash, string password)
+        {
+            var parts = hash.Split('.', 2);
+
+            if (parts.Length != 2)
+            {
+                return false;
+            }
+
+            var iterations = Options.Iterations;
+            var salt = Convert.FromBase64String(parts[0]);
+            var key = Convert.FromBase64String(parts[1]);
+
+            using (var algorithm = new Rfc2898DeriveBytes(
+              password,
+              salt,
+              iterations,
+              HashAlgorithmName.SHA512))
+            {
+                var keyToCheck = algorithm.GetBytes(KeySize);
+
+                var isValid = keyToCheck.SequenceEqual(key);
+
+                return isValid;
+            }
+        }
     }
 }
