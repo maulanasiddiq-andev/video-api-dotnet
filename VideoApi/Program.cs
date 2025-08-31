@@ -2,12 +2,36 @@ using Microsoft.EntityFrameworkCore;
 using VideoApi.Models;
 using VideoApi.Extensions;
 using VideoApi.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!)),
+        ValidateLifetime = false,
+        ValidateIssuerSigningKey = true
+    };
+});
 
 // Controllers
 builder.Services.AddControllers();
@@ -44,5 +68,10 @@ app.UseHttpsRedirection();
 
 // Controllers
 app.MapControllers();
+
+
+// Authentication
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VideoApi.Exceptions;
 using VideoApi.Models;
@@ -8,6 +9,7 @@ namespace VideoApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly UserRepository _userRepository;
