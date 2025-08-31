@@ -128,12 +128,20 @@ namespace VideoApi.Repositories
         public async Task<bool> IsLoginValidAsync(UserModel user, string password)
         {
             var isPasswordValid = passwordHasherHelper.IsPasswordValid(user.HashedPassword, password);
-            if (!isPasswordValid && user.EmailVerifiedTime == null)
+            if (!isPasswordValid && user.EmailVerifiedTime != null)
             {
                 await IncrementFailedLoginAttempts(user);
             }
 
             return isPasswordValid && user.EmailVerifiedTime != null;
+        }
+
+        public async Task UpdateLastLoginTimeAsync(UserModel user)
+        {
+            user.LastLoginTime = DateTime.UtcNow;
+
+            _dBContext.Update(user);
+            await _dBContext.SaveChangesAsync();
         }
 
         public async Task<TokenDto> GenerateAndSaveLoginToken(UserModel user, string userAgent)
@@ -143,6 +151,7 @@ namespace VideoApi.Repositories
 
             var userToken = new UserTokenModel
             {
+                UserTokenId = Guid.NewGuid().ToString("N"),
                 UserId = user.UserId,
                 ExpiredTime = expiredTime,
                 Token = jwtToken,
