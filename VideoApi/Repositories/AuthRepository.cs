@@ -34,7 +34,7 @@ namespace VideoApi.Repositories
 
             if (!userExists)
             {
-                throw new KnownException($"User dengan email {user.Email} sudah ada");
+                throw new KnownException($"User dengan email {user.Email} atau username {user.Username} sudah ada");
             }
 
             user.UserId = Guid.NewGuid().ToString("N");
