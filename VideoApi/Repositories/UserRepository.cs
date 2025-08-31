@@ -18,7 +18,26 @@ namespace VideoApi.Repositories
 
         public async Task<List<UserDto>> GetUsersAsync()
         {
-            var listUser = await _dBContext.User.ToListAsync();
+            IQueryable<UserModel> listUserQuery = _dBContext.User.AsQueryable();
+
+            #region Ordering
+            string orderBy = "createdTime";
+            string orderDir = "desc";
+
+            if (orderBy.Equals("createdTime"))
+            {
+                if (orderDir.Equals("asc"))
+                {
+                    listUserQuery = listUserQuery.OrderBy(x => x.CreatedTime).AsQueryable();
+                }
+                else if (orderDir.Equals("desc"))
+                {
+                    listUserQuery = listUserQuery.OrderByDescending(x => x.CreatedTime).AsQueryable();
+                }
+            }
+            #endregion
+            
+            var listUser = await listUserQuery.ToListAsync();
             var userDtos = _mapper.Map<List<UserDto>>(listUser);
 
             return userDtos;
