@@ -31,9 +31,21 @@ namespace VideoApi.Helpers
 
         public string Hash(string password)
         {
+            // using, object "algorithm" automatically disposed outside the scope 
+            // prevents memory leak
+            // Rfc2898DeriveBytes: uses PBKDF2 algorithm
             using (var algorithm = new Rfc2898DeriveBytes(password, SaltSize, Options.Iterations, HashAlgorithmName.SHA512))
             {
+                /**
+                * key: final value of hashing algorithm after password and salt were proceeded several times
+                * this is stored inside the database as hashed password
+                */
                 var key = Convert.ToBase64String(algorithm.GetBytes(KeySize));
+                /**
+                * salt: unique random value added to the password before being hashed
+                * prevents rainbow table attack
+                * creates unique hash for every user
+                */
                 var salt = Convert.ToBase64String(algorithm.Salt);
 
                 return $"{salt}.{key}";
