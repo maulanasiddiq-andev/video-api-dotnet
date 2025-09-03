@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VideoApi.Dtos.Requests;
 using VideoApi.Dtos.Video;
 using VideoApi.Exceptions;
 using VideoApi.Repositories;
@@ -28,12 +29,46 @@ namespace VideoApi.Controllers
                 if (!results.IsValid)
                 {
                     var messages = results.Errors.Select(x => x.ErrorMessage).ToList();
-                    return new BaseResponse(false, messages);    
+                    return new BaseResponse(false, messages);
                 }
 
                 var videoModel = await _videoRepository.CreateVideoAsync(video);
 
                 return new BaseResponse(true, "Video berhasil ditambahkan", videoModel);
+            }
+            catch (KnownException ex)
+            {
+                return new BaseResponse(false, ex.Message, null);
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse(false, ex.Message, null);
+            }
+        }
+
+        [HttpGet]
+        public async Task<BaseResponse> GetVideoAsync([FromQuery] SearchRequestDto search)
+        {
+            try
+            {
+                var result = await _videoRepository.GetDatasAsync(search);
+
+                return new BaseResponse(true, "", result);
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse(false, ex.Message, null);
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<BaseResponse> GetVideoByIdAsync([FromRoute] string id)
+        {
+            try
+            {
+                var video = await _videoRepository.GetDataById(id);
+
+                return new BaseResponse(true, "", video);
             }
             catch (KnownException ex)
             {

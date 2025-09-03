@@ -1,8 +1,12 @@
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using VideoApi.Constants;
+using VideoApi.Dtos.Requests;
 using VideoApi.Dtos.Video;
+using VideoApi.Exceptions;
 using VideoApi.Extensions;
 using VideoApi.Models;
+using VideoApi.Responses;
 
 namespace VideoApi.Repositories
 {
@@ -24,6 +28,59 @@ namespace VideoApi.Repositories
             {
                 userId = httpContextAccessor.HttpContext?.GetUserId();
             }
+        }
+
+        public async Task<SearchResponse> GetDatasAsync(SearchRequestDto search)
+        {
+            IQueryable<VideoModel> listVideoQuery = _dBContext.Video
+                .Where(x => x.RecordStatus.ToLower().Equals(RecordStatusConstant.Active.ToLower()))
+                .Include(x => x.User)
+                .AsQueryable();
+
+            #region Ordering
+            string orderBy = search.OrderBy;
+            string orderDir = search.OrderDir;
+
+            if (orderBy.Equals("createdTime"))
+            {
+                if (orderDir.Equals("asc"))
+                {
+                    listVideoQuery = listVideoQuery.OrderBy(x => x.CreatedTime).AsQueryable();
+                }
+                else if (orderDir.Equals("desc"))
+                {
+                    listVideoQuery = listVideoQuery.OrderByDescending(x => x.CreatedTime).AsQueryable();
+                }
+            }
+            #endregion
+
+            var response = new SearchResponse();
+            response.TotalItems = await listVideoQuery.CountAsync();
+            response.CurrentPage = search.CurrentPage;
+            response.PageSize = search.PageSize;
+
+            var skip = search.PageSize * search.CurrentPage;
+            var take = search.PageSize;
+            var listVideo = await listVideoQuery.Skip(skip).Take(take).ToListAsync();
+            
+            response.Items = _mapper.Map<List<VideoDto>>(listVideo);
+
+            return response;
+        }
+
+        public async Task<VideoDto> GetDataById(string id)
+        {
+            VideoModel? video = await _dBContext.Video
+                .Where(x => x.VideoId.Equals(id))
+                .Where(x => x.RecordStatus.ToLower().Equals(RecordStatusConstant.Active.ToLower()))
+                .FirstOrDefaultAsync();
+
+            if (video == null)
+            {
+                throw new KnownException("Data tidak ditemukan");
+            }
+
+            return _mapper.Map<VideoDto>(video);
         }
 
         public async Task<VideoModel> CreateVideoAsync(VideoCreateRequestDto video)
@@ -60,7 +117,7 @@ namespace VideoApi.Repositories
 
             videoModel.VideoId = Guid.NewGuid().ToString("N");
             videoModel.ThumbnailUrl = Path.Combine("thumbnails", thumbnailName).Replace("\\", "/");
-            videoModel.VideoUrl = Path.Combine("videos", videoName).Replace("\\", "/");;
+            videoModel.VideoUrl = Path.Combine("videos", videoName).Replace("\\", "/"); ;
             videoModel.CreatedTime = DateTime.UtcNow;
             videoModel.ModifiedTime = DateTime.UtcNow;
             videoModel.UserId = userId;
