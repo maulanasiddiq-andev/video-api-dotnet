@@ -1,5 +1,7 @@
 using AutoMapper;
+using VideoApi.Constants;
 using VideoApi.Dtos.Video;
+using VideoApi.Extensions;
 using VideoApi.Models;
 
 namespace VideoApi.Repositories
@@ -8,10 +10,20 @@ namespace VideoApi.Repositories
     {
         private readonly VideoAppDBContext _dBContext;
         private readonly IMapper _mapper;
-        public VideoRepository(VideoAppDBContext dBContext, IMapper mapper)
+        private readonly string? userId = "";
+        public VideoRepository(
+            VideoAppDBContext dBContext,
+            IMapper mapper,
+            IHttpContextAccessor httpContextAccessor
+        )
         {
             _dBContext = dBContext;
             _mapper = mapper;
+
+            if (httpContextAccessor != null)
+            {
+                userId = httpContextAccessor.HttpContext?.GetUserId();
+            }
         }
 
         public async Task<VideoModel> CreateVideoAsync(VideoCreateRequestDto video)
@@ -51,6 +63,13 @@ namespace VideoApi.Repositories
             videoModel.VideoUrl = Path.Combine("videos", videoName).Replace("\\", "/");;
             videoModel.CreatedTime = DateTime.UtcNow;
             videoModel.ModifiedTime = DateTime.UtcNow;
+            videoModel.UserId = userId;
+            videoModel.CreatedBy = userId ?? "";
+            videoModel.ModifiedBy = userId ?? "";
+            videoModel.RecordStatus = RecordStatusConstant.Active;
+
+            await _dBContext.AddAsync(videoModel);
+            await _dBContext.SaveChangesAsync();
 
             return videoModel;
         }
