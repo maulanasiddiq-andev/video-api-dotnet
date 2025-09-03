@@ -74,4 +74,7 @@ app.MapControllers();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// For Files
+app.UseStaticFiles();
+
 app.Run();
