@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VideoApi.Dtos.Requests;
 using VideoApi.Exceptions;
 using VideoApi.Models;
 using VideoApi.Repositories;
@@ -19,11 +20,11 @@ namespace VideoApi.Controllers
         }
 
         [HttpGet]
-        public async Task<BaseResponse> GetUsersAsync()
+        public async Task<BaseResponse> GetUsersAsync([FromQuery] SearchRequestDto search)
         {
             try
             {
-                var users = await _userRepository.GetUsersAsync();
+                var users = await _userRepository.GetUsersAsync(search);
 
                 return new BaseResponse(true, null, users);
             }
