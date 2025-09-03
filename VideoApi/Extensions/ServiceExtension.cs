@@ -8,6 +8,7 @@ namespace VideoApi.Extensions
         {
             collection.AddTransient<AuthRepository>();
             collection.AddTransient<UserRepository>();
+            collection.AddTransient<VideoRepository>();
         }
     }
 }
