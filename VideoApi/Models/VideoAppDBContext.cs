@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using VideoApi.Models;
 
 namespace VideoApi.Models
 {
@@ -10,5 +9,6 @@ namespace VideoApi.Models
         public DbSet<UserModel> User { get; set; }
         public DbSet<OtpModel> Otp { get; set; }
         public DbSet<UserTokenModel> UserToken { get; set; }
+        public DbSet<VideoModel> Video { get; set; }
     }
 }
