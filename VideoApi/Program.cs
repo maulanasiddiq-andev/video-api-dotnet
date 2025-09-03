@@ -39,6 +39,9 @@ builder.Services.AddControllers();
 // Mapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+// HTTP Context Accessor
+builder.Services.AddHttpContextAccessor();
+
 // connect to database
 var videoAppConnectionString = builder.Configuration.GetConnectionString("VideoAppPostgreSql");
 builder.Services.AddDbContext<VideoAppDBContext>(options =>
